@@ -102,4 +102,27 @@ class ClientController extends Controller
         $client->delete();
         return redirect()->route('client.index')->with('success', 'Client supprimé');
     }
+
+    /**
+     * Display residential clients.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function showResidentialClients()
+    {
+        $clients = Client::where('type', 'residential')->get(); // Filter residential clients
+        return view('client.residential', compact('clients'));
+    }
+
+    /**
+     * Display business clients.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function showBusinessClients()
+    {
+        $clients = Client::where('type', 'business')->get(); // Filter business clients
+        return view('client.business', compact('clients'));
+    }
+
 }

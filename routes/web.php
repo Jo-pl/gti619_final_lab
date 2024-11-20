@@ -38,3 +38,9 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::post('/admin/settings', [AdminController::class, 'saveSettings'])->name('admin.saveSettings');
 });
 
+// Routes for Residential and Business Clients
+Route::middleware(['auth'])->group(function () {
+    Route::get('/clients/residential', [ClientController::class, 'showResidentialClients'])->name('clients.residential');
+    Route::get('/clients/business', [ClientController::class, 'showBusinessClients'])->name('clients.business');
+});
+
