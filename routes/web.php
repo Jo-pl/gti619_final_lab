@@ -15,7 +15,7 @@ use App\Http\Controllers\AdminController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
 
 Route::resource('client', ClientController::class);
@@ -31,16 +31,17 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 
-
-// Route for the Admin Page
-Route::middleware(['auth', 'isAdmin'])->group(function () {
+// Admin routes
+Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
     Route::post('/admin/settings', [AdminController::class, 'saveSettings'])->name('admin.saveSettings');
-});
-
-// Routes for Residential and Business Clients
-Route::middleware(['auth'])->group(function () {
-    Route::get('/clients/residential', [ClientController::class, 'showResidentialClients'])->name('clients.residential');
     Route::get('/clients/business', [ClientController::class, 'showBusinessClients'])->name('clients.business');
 });
+
+
+// Residential client routes
+Route::middleware(['auth', 'check.role:Préposé aux clients résidentiels'])->group(function () {
+   Route::get('/clients/residential', [ClientController::class, 'showResidentialClients'])->name('clients.residential');
+});
+
 

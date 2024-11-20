@@ -1,25 +1,25 @@
 @extends('master')
 
 @section('content')
-    <div class="container">
-        <h1>Residential Clients</h1>
-        <table class="table table-striped">
-            <thead>
+<div class="container">
+    <h1>Residential Clients</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($clients as $client)
                 <tr>
-                    <th>#</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $client->first_name }}</td>
+                    <td>{{ $client->last_name }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach($clients as $client)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $client->first_name }}</td>
-                        <td>{{ $client->last_name }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 @endsection

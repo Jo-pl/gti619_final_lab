@@ -110,7 +110,7 @@ class ClientController extends Controller
      */
     public function showResidentialClients()
     {
-        $clients = Client::where('type', 'residential')->get(); // Filter residential clients
+        $clients = Client::where('type', 'residential')->get(); // Residential clients
         return view('client.residential', compact('clients'));
     }
 
@@ -121,8 +121,9 @@ class ClientController extends Controller
      */
     public function showBusinessClients()
     {
-        $clients = Client::where('type', 'business')->get(); // Filter business clients
+        $clients = Client::where('type', 'business')->get(); // Business clients
         return view('client.business', compact('clients'));
+        //abort(404); 
     }
 
 }
