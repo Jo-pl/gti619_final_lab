@@ -1,72 +1,82 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# GTI619 LAB 5 - Contrôle d'accès basé sur les rôles (RBAC)
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Ce projet implémente un contrôle d'accès basé sur les rôles (RBAC) dans une application Laravel. Les utilisateurs se voient attribuer des rôles spécifiques pour accéder à certaines fonctionnalités :
 
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Admin** : Accès à `/admin/settings` et `/client/business`.
+- **Préposé aux clients résidentiels** : Accès à `/client/residential`.
 
 
-Inspiré de: 
-- https://laravel.com/docs/8.x
-- https://laravel.com/docs/8.x/database
-- https://laravel.com/docs/8.x/routing
-- https://www.cloudways.com/blog/laravel-bootstrap-template-integration/
-- https://morioh.com/p/60b941830c01
-- https://www.digitalocean.com/community/tutorials/simple-laravel-crud-with-resource-controllers
+## Prérequis
+- **PHP** (8.0+)
+- **Composer**
+- **SQLite**
+
+
+## Instructions de configuration
+
+### 1. Installer les dépendances
+Exécutez la commande suivante pour installer les dépendances PHP :
+```
+bash
+composer install
+```
+
+### 2. Créer la base de données SQLite
+Accédez au dossier database et créez une base de données SQLite :
+
+```
+cd database
+touch database.sqlite
+```
+
+### 3. Exécuter les migrations
+Accédez au dossier database et créez une base de données SQLite :
+
+```
+php artisan migrate
+```
+
+### 4. Lancer le serveur de développement
+Accédez au dossier database et créez une base de données SQLite :
+
+```
+php artisan serve
+```
+
+## Accéder à l'application
+- Page d'accueil : `http://127.0.0.1:8000/`
+- Paramètres Admin : `http://127.0.0.1:8000/admin/settings`
+- Clients résidentiels : `http://127.0.0.1:8000/client/residential`
+- Clients commerciaux : `http://127.0.0.1:8000/client/business`
+
+## Conseils de dépannage
+1. Pages vides : Vérifiez que la base de données contient des données de test ou que les vues contiennent des espaces réservés (placeholders).
+2. Effacement du cache : Si les routes ou les configurations échouent, effacez le cache avec :
+```
+php artisan cache:clear
+php artisan route:clear
+php artisan config:clear
+php artisan view:clear
+```
+
+## Aperçu de la structure des fichiers
+- Contrôleurs
+    - `AdminController.php` : Gère les paramètres administratifs.
+    - `ClientController.php` : Gère les pages des clients.
+- Middleware
+    - `CheckRole.php` : Applique le contrôle d'accès basé sur les rôles.
+- Vues
+    - `master.blade.php` : Mise en page de base.
+    - `client/residential.blade.php` : Vue des clients résidentiels.
+    - `client/business.blade.php` : Vue des clients commerciaux.
+    - `admin/settings.blade.php` : Vue des paramètres admin.
+- Routes
+    - Définies dans `routes/web.php`.
+
+## Conclusion
+Cette application illustre le contrôle d'accès basé sur les rôles. Utilisez les rôles appropriés pour tester l'application. Pour plus de détails sur la configuration ou des explications supplémentaires, veuillez consulter la documentation complète du projet.
+
+
+
+
 
