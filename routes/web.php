@@ -3,33 +3,22 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\AdminController;
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/', function () {
     return view('home');
 });
+// Route with custom throttle middleware (limit to 3 attempts per 1 minute)
+Route::post('login', [LoginController::class, 'login'])
+    ->middleware('customThrottle:3,1');  // Ensure this middleware name is correct
 
+// Resource routes for ClientController (This includes the 'edit' route)
 Route::resource('client', ClientController::class);
-Route::get('client/{id}/edit', 'ClientController@edit')->name('client.edit');
-Route::put('client/{id}', 'ClientController@update')->name('client.update');
-Route::delete('client/{id}', 'ClientController@destroy')->name('client.destroy');
+
+// Auth routes
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
 
 // Admin routes
 Route::middleware(['auth', 'check.role:admin'])->group(function () {
@@ -38,10 +27,7 @@ Route::middleware(['auth', 'check.role:admin'])->group(function () {
     Route::get('/clients/business', [ClientController::class, 'showBusinessClients'])->name('clients.business');
 });
 
-
 // Residential client routes
 Route::middleware(['auth', 'check.role:Préposé aux clients résidentiels'])->group(function () {
    Route::get('/clients/residential', [ClientController::class, 'showResidentialClients'])->name('clients.residential');
 });
-
-

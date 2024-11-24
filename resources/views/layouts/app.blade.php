@@ -63,6 +63,13 @@
             </nav>
         </header>
         <main class="flex flex-col flex-1">
+            <!-- Display alert for error messages -->
+            @if (session('error'))
+                <script>
+                    alert('{{ session('error') }}');
+                </script>
+            @endif
+
             @yield('content')
         </main>
         <footer class="flex h-[10vh]">

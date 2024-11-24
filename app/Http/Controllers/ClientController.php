@@ -123,7 +123,7 @@ class ClientController extends Controller
     {
         $clients = Client::where('type', 'business')->get(); // Business clients
         return view('client.business', compact('clients'));
-        //abort(404); 
+        
     }
 
 }

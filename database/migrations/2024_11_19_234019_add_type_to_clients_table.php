@@ -14,7 +14,7 @@ class AddTypeToClientsTable extends Migration
     public function up()
     {
         Schema::table('clients', function (Blueprint $table) {
-            //
+            $table->string('type')->after('last_name'); // Add 'type' column
         });
     }
 
@@ -26,7 +26,8 @@ class AddTypeToClientsTable extends Migration
     public function down()
     {
         Schema::table('clients', function (Blueprint $table) {
-            //
+            $table->dropColumn('type'); // Remove 'type' column
         });
     }
 }
+
