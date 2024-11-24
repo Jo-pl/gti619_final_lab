@@ -17,7 +17,6 @@ Ce projet implémente un contrôle d'accès basé sur les rôles (RBAC) dans une
 ### 1. Installer les dépendances
 Exécutez la commande suivante pour installer les dépendances PHP :
 ```
-bash
 composer install
 ```
 
@@ -36,11 +35,25 @@ Accédez au dossier database et créez une base de données SQLite :
 php artisan migrate
 ```
 
-### 4. Lancer le serveur de développement
-Accédez au dossier database et créez une base de données SQLite :
-
+### 4. Créer et installer des certificats SSL (HTTPS)
+1. Générer la clé privée et le certificat : :
 ```
-php artisan serve
+openssl req -new -x509 -sha256 -days 365 -keyout certificates/private/gti619_key.pem -out certificates/gti619_cert.pem -config certificates/openssl.cnf -extensions v3_req
+```
+2. Signer le certificat avec la clé de l'autorité de certification (CA) :
+```
+openssl x509 -req -in certificates/gti619.csr -CA certificates/ca.crt -CAkey certificates/private/ca.key -CAcreateserial -out certificates/gti619_cert_signed.pem -days 365 -sha256 -extfile certificates/openssl.cnf -extensions v3_req
+```
+3. Ajouter le certificat (gti619_cert_signed.pem) dans votre **Keychain** pour le rendre valide localement (suivez les instructions pour Mac ou Windows, selon votre système d'exploitation).
+
+### 5. Lancer le serveur de développement avec HTTPS
+1. Build les images Docker :
+```
+docker-compose build
+```
+2. Lancer les services Docker :
+```
+docker-compose up -d
 ```
 
 ## Accéder à l'application
