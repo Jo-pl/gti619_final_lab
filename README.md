@@ -7,7 +7,7 @@ Ce projet implémente un contrôle d'accès basé sur les rôles (RBAC) dans une
 
 
 ## Prérequis
-- **PHP** (8.0+)
+- **PHP** (8.2+)
 - **Composer**
 - **SQLite**
 
