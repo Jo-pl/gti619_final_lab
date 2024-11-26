@@ -1,0 +1,58 @@
+[ req ]
+default_bits        = 2048
+default_keyfile     = privkey.pem
+distinguished_name  = req_distinguished_name
+req_extensions      = v3_req
+x509_extensions     = v3_ca
+prompt              = no
+
+[ req_distinguished_name ]
+C  = CA
+ST = Quebec
+L  = Montreal
+O  = ETS
+OU = GTI619
+CN = Groupe F
+emailAddress = admin@etsmtl.ca
+
+[ v3_req ]
+keyUsage = keyEncipherment, dataEncipherment, digitalSignature
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName = @alt_names
+
+[ v3_ca ]
+keyUsage = critical, keyCertSign, cRLSign
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+
+[ alt_names ]
+DNS.1   = localhost
+IP.1    = 127.0.0.1
+
+# Certificate Authority settings
+[ ca ]
+# The CA section specifies options used by the `openssl ca` command.
+default_ca = CA_default
+
+[ CA_default ]
+# The directory where the CA's files are stored.
+dir               = ./certificates/demoCA
+# Directory to store the new signed certificates.
+new_certs_dir     = $dir/newcerts
+# The CA's certificate and key files.
+certificate       = $dir/ca.crt
+private_key       = $dir/private/ca.key
+# The serial number file, which should exist or be created.
+serial            = $dir/serial
+# The database file, which keeps track of all signed certificates.
+database          = $dir/index.txt
+# Default message digest algorithm
+default_md        = sha256
+# Validity period in days for the certificate
+default_days      = 365
+# Define the policy
+policy            = policy_strict
+
+[ policy_strict ]
+# The policy that enforces checks on the certificate request
+commonName        = supplied
