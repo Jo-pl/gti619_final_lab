@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddRoleColumnToUsersTable extends Migration
+class AddFailedAttemptsAndLockedUntilToUsersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,10 +14,10 @@ class AddRoleColumnToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('user'); // Add the 'role' column with a default value
+            $table->integer('failed_attempts')->default(0);
+            $table->timestamp('locked_until')->nullable();
         });
     }
-
     /**
      * Reverse the migrations.
      *
@@ -26,7 +26,7 @@ class AddRoleColumnToUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role'); // Remove the 'role' column if the migration is rolled back
+            $table->dropColumn(['failed_attempts', 'locked_until']);
         });
     }
 }

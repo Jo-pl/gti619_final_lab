@@ -1,4 +1,14 @@
 services:
+  npm:
+    image: node:18-alpine # Choose an appropriate Node.js version
+    container_name: npm
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    command: npm run watch
+    networks:
+      - sail
+
   # Laravel service
   laravel.test:
     build:
