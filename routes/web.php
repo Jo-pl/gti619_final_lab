@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Auth\ChangePasswordController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -44,4 +45,10 @@ Route::middleware(['auth', 'check.role:Préposé aux clients résidentiels'])->g
    Route::get('/clients/residential', [ClientController::class, 'showResidentialClients'])->name('clients.residential');
 });
 
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('password.change.form');
+    Route::post('/change-password', [ChangePasswordController::class, 'changePassword'])->name('password.change');
+});
 
