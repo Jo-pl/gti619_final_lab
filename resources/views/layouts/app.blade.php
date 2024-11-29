@@ -23,34 +23,33 @@
     <div class="flex flex-col min-h-screen justify-between bg-background">
         <header class="flex items-center h-[10vh] px-4 shadow-md shadow-bg-low">
             <nav class="flex-1 flex items-center justify-between flex-row w-full">
-                <ul class="">
+                <ul>
                     <li>
                         <a href="/">Home</a>
                     </li>
                 </ul>
                 <ul class="flex flex-row gap-2">
                     @guest
-                    @if (Route::has('login'))
-                        <li class="">
-                            <a class="" href="{{ route('login') }}">{{ __('Login') }}</a>
-                        </li>
-                    @endif
-                    @if (Route::has('register'))
-                        <li class="">
-                            <a class="" href="{{ route('register') }}">{{ __('Register') }}</a>
-                        </li>
-                    @endif
+                        @if (Route::has('login'))
+                            <li>
+                                <a href="{{ route('login') }}">{{ __('Login') }}</a>
+                            </li>
+                        @endif
+                        @if (Route::has('register'))
+                            <li>
+                                <a href="{{ route('register') }}">{{ __('Register') }}</a>
+                            </li>
+                        @endif
                     @else
-                    <li>
-                        <a id="navbarDropdown" class="" role="button">
-                            Welcome <span class="text-accent border-r-[2px] pr-2 border-solid border-text">{{ Auth::user()->name }}</span>
-                         </a>
-                    </li>
-                        <li class="">                            
+                        <li>
+                            <a id="navbarDropdown" role="button">
+                                Welcome <span class="text-accent border-r-[2px] pr-2 border-solid border-text">{{ Auth::user()->name }}</span>
+                             </a>
+                        </li>
+                        <li>
                             <div aria-labelledby="navbarDropdown">
                                 <a href="{{ route('logout') }}"
-                                onclick="event.preventDefault();
-                                                document.getElementById('logout-form').submit();">
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     {{ __('Logout') }}
                                 </a>
                                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
@@ -65,8 +64,31 @@
         <main class="flex flex-col flex-1">
             @yield('content')
         </main>
-        <footer class="flex h-[10vh]">
-        </footer>
+        <footer class="flex h-[10vh]"></footer>
     </div>
+
+    <!-- Idle Timeout Script -->
+    <script>
+        let idleTime = 0;
+        const maxIdleTime = 30 * 60 * 1000; // 30 minutes in milliseconds
+        const warningTime = maxIdleTime - 60 * 1000; // 1 minute before timeout
+
+        function resetIdleTimer() {
+            idleTime = 0;
+        }
+
+        setInterval(() => {
+            idleTime += 1000;
+            if (idleTime === warningTime) {
+                alert("Your session will expire in 1 minute!");
+            }
+            if (idleTime >= maxIdleTime) {
+                window.location.href = "{{ route('logout') }}"; // Redirect to logout
+            }
+        }, 1000);
+
+        document.addEventListener('mousemove', resetIdleTimer);
+        document.addEventListener('keypress', resetIdleTimer);
+    </script>
 </body>
 </html>
