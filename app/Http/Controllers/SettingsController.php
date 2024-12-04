@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+
 class SettingsController extends Controller
 {
     public function index()
     {
-        return view('settings.index'); // Ensure this view file exists
+        return view('admin.settings'); // Ensure this view file exists
     }
 
     public function update(Request $request)

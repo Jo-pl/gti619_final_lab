@@ -9,9 +9,7 @@ class PasswordHistory extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'password',
-    ];
+    protected $fillable = ['user_id', 'password'];
 }
+
 

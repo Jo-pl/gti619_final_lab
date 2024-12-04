@@ -114,4 +114,18 @@ return [
 
     'password_timeout' => 10800,
 
+
+      /*
+    |--------------------------------------------------------------------------
+    | Custom Authentication Settings
+    |--------------------------------------------------------------------------
+    |
+    | These are additional custom configurations for authentication-related
+    | functionality, such as max failed login attempts.
+    |
+    */
+
+    'max_attempts' => env('AUTH_MAX_ATTEMPTS', 3), // Defaults to 3 if not set in .env
+
+
 ];

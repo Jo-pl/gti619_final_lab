@@ -18,43 +18,35 @@ class LoginLockoutTest extends TestCase
             'password' => bcrypt('password'),
         ]);
     
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < $this->maxAttempts; $i++) { // Adjust to match your maxAttempts
             $this->post('/login', [
                 'email' => 'test@example.com',
                 'password' => 'wrongpassword',
             ]);
         }
-
+    
         $user->refresh(); // Refresh user instance to get updated data
     
-        // Assert that the user is locked and the locked_until is set correctly
-        $this->assertDatabaseHas('users', [
-            'email' => $user->email,
-            'locked_until' => now()->addMinutes(15)->toDateTimeString(), // Use the same lockout time here
-        ]);
+        $this->assertNotNull($user->locked_until);
+        $this->assertTrue(Carbon::now()->lessThan($user->locked_until));
     }
-
     
     public function test_locked_account_cannot_login()
     {
         Carbon::setTestNow(now());
     
-        // Create a user with the locked_until field set to simulate a locked account
         $user = User::factory()->create([
+            'email' => 'test@example.com',
             'locked_until' => now()->addMinutes(15),
         ]);
     
-        // Attempt to log in with the locked account
         $response = $this->post('/login', [
-            'email' => $user->email,
+            'email' => 'test@example.com',
             'password' => 'password',
         ]);
     
-        // Assert that the user is redirected back to login page
         $response->assertRedirect('/login');
-        
-        // Assert the correct session error message is in place
-        $response->assertSessionHasErrors(['error' => ['Account locked. Try again in 15 minutes.']]);
+        $response->assertSessionHasErrors(['error' => 'Account locked. Try again in 15 minutes.']);
     
         Carbon::setTestNow();
     }

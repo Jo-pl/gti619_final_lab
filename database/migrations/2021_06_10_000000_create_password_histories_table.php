@@ -16,9 +16,9 @@ class CreatePasswordHistoriesTable extends Migration
         Schema::create('password_histories', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('password'); // Store hashed passwords
+            $table->string('password'); // Store hashed password
             $table->timestamps();
-
+        
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

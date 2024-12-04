@@ -9,13 +9,22 @@ use App\Models\ActiveSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Models\User;
+
 
 class LoginController extends Controller
 {
     use AuthenticatesUsers;
 
-    protected $maxAttempts = 5; // Maximum allowed attempts
+    protected $maxAttempts; // Maximum allowed attempts
     protected $lockoutTime = 15; // Lockout duration in minutes
+
+
+
+    public function __construct()
+    {
+        $this->maxAttempts = config('auth.max_attempts', 3); // Default to 3 if not set
+    }
 
     /**
      * Handle failed login attempts.
@@ -25,11 +34,12 @@ class LoginController extends Controller
      */
     protected function sendFailedLoginResponse(Request $request)
     {
-        $user = Auth::getProvider()->retrieveByCredentials(['email' => $request->email]);
+        $user = User::where('email', $request->email)->first();
 
         if ($user) {
             // Increment failed attempts
-            $user->increment('failed_attempts');
+            $user->failed_attempts = $user->failed_attempts + 1;
+            $user->save();
 
             // Lock the user if max attempts are reached
             if ($user->failed_attempts >= $this->maxAttempts) {
@@ -37,28 +47,14 @@ class LoginController extends Controller
                     'locked_until' => Carbon::now()->addMinutes($this->lockoutTime),
                     'failed_attempts' => 0, // Reset failed attempts after locking
                 ]);
-                Log::debug('User locked:', ['email' => $user->email, 'locked_until' => $user->locked_until]);
-            }
-            if ($user->locked_until && Carbon::now()->lessThan($user->locked_until)) {
-                // Calculate the time left until unlock
-                $timeLeft = now()->diffInMinutes($user->locked_until);
-            
-                // Use session()->put() to keep the message in session across requests
-                session()->put('error', "Account locked. Try again in $timeLeft minutes.");
-            
-                // Debug log to confirm the session error is set correctly
-                Log::debug('Flash session error set for locked account', [
-                    'error' => session('error'),
+                Log::debug('User locked:', [
                     'email' => $user->email,
                     'locked_until' => $user->locked_until,
-                    'time_left' => $timeLeft
                 ]);
-            
-                return redirect()->route('login'); // Redirect to login page
             }
         }
 
-        // Flash general invalid credentials error if the user is not locked
+        // Flash general invalid credentials error
         session()->flash('error', 'Invalid credentials.');
         return redirect()->back();
     }
@@ -129,40 +125,46 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        // Validate the incoming login credentials
-        $credentials = $request->only('email', 'password');
-        
-        // Check if the user exists and if the account is locked
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+    
         $user = User::where('email', $request->email)->first();
-        
-        // If user is locked, handle this case
-        if ($user && $user->locked_until && Carbon::now()->lessThan($user->locked_until)) {
-            // Calculate the remaining time before the account can be unlocked
-            $timeLeft = now()->diffInMinutes($user->locked_until);
-            
-            // Store the error message in session so it persists across requests
-            session()->put('error', "Account locked. Try again in $timeLeft minutes.");
-            
-            // Log the situation for debugging
-            Log::debug('User locked out:', [
-                'email' => $user->email,
-                'locked_until' => $user->locked_until,
-                'time_left' => $timeLeft
-            ]);
-            
-            // Redirect the user back to the login page with the error message
-            return redirect()->route('login');
+    
+        if (!$user) {
+            return redirect()->back()->with('error', 'Invalid credentials.');
         }
-        
-        // Attempt the login with the provided credentials
-        if (Auth::attempt($credentials)) {
-            // Log the user in, regenerate the session, and redirect to the intended page
-            return redirect()->intended('/home');
+    
+        // Handle account lockout
+        if ($user->locked_until && Carbon::now()->lessThan($user->locked_until)) {
+            $timeLeft = Carbon::now()->diffInMinutes($user->locked_until);
+            return redirect()->back()->with('error', "Account locked. Try again in $timeLeft minutes.");
         }
-
-        // If credentials are incorrect, show a general invalid credentials error
-        session()->flash('error', 'Invalid credentials.');
-        return redirect()->back();
+    
+        // Attempt to authenticate
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            $user->increment('failed_attempts');
+    
+            if ($user->failed_attempts >= $this->maxAttempts) {
+                $user->update([
+                    'locked_until' => Carbon::now()->addMinutes($this->lockoutTime),
+                    'failed_attempts' => 0,
+                ]);
+                return redirect()->back()->with('error', "Account locked for {$this->lockoutTime} minutes.");
+            }
+    
+            return redirect()->back()->with('error', 'Invalid credentials.');
+        }
+    
+        // Reset failed attempts after successful login
+        $user->update([
+            'failed_attempts' => 0,
+            'locked_until' => null,
+        ]);
+    
+        return redirect()->intended('/home');
     }
+    
 
 }

@@ -32,7 +32,13 @@ class AddLockoutFieldsToUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['failed_attempts', 'locked_until']); // Removes the columns
+            if (Schema::hasColumn('users', 'failed_attempts')) {
+                $table->dropColumn('failed_attempts');
+            }
+    
+            if (Schema::hasColumn('users', 'locked_until')) {
+                $table->dropColumn('locked_until');
+            }
         });
-    }
+    }    
 }

@@ -33,15 +33,16 @@ class AddFailedAttemptsAndLockedUntilToUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Remove the columns if they exist
-            if (Schema::hasColumn('users', 'failed_attempts')) {
+        if (Schema::hasColumn('users', 'failed_attempts')) {
+            Schema::table('users', function (Blueprint $table) {
                 $table->dropColumn('failed_attempts');
-            }
+            });
+        }
 
-            if (Schema::hasColumn('users', 'locked_until')) {
+        if (Schema::hasColumn('users', 'locked_until')) {
+            Schema::table('users', function (Blueprint $table) {
                 $table->dropColumn('locked_until');
-            }
-        });
+            });
+        }
     }
 }

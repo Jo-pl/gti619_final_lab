@@ -7,10 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Models\PasswordHistory;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
-
-
+use App\Models\PasswordHistory;
 
 class ChangePasswordController extends Controller
 {
@@ -25,29 +24,91 @@ class ChangePasswordController extends Controller
     }
 
     /**
-     * Handle the password change request.
+     * Handle the password change request for the current user.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function changePassword(Request $request)
     {
-        // Validate the request input
         $validator = Validator::make($request->all(), [
             'current_password' => 'required',
             'new_password' => [
                 'required',
-                'min:8',
+                'min:6',
                 'confirmed',
-                'regex:/[A-Z]/',
                 'regex:/[0-9]/',
-                'regex:/[@$!%*?&]/',
             ],
         ]);
     
         if ($validator->fails()) {
-            Log::warning('Password change failed: Validation error', [
-                'user_id' => Auth::id(),
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+    
+        $user = Auth::user();
+    
+        if (!Hash::check($request->current_password, $user->password)) {
+            return redirect()->back()->with('error', 'Your current password is incorrect.');
+        }
+    
+        // Check if the new password exists in the password history
+        $passwordExists = PasswordHistory::where('user_id', $user->id)
+            ->get()
+            ->contains(function ($history) use ($request) {
+                return Hash::check($request->new_password, $history->password);
+            });
+    
+        if ($passwordExists) {
+            return redirect()->back()->with('error', 'You cannot reuse an old password.');
+        }
+    
+        // Update the user's password
+        $user->update([
+            'password' => Hash::make($request->new_password),
+            'locked_until' => null, // Unlock the account
+            'failed_attempts' => 0, // Reset failed attempts
+        ]);
+    
+        // Store the new password in the password history
+        PasswordHistory::create([
+            'user_id' => $user->id,
+            'password' => $user->password, // Store the hashed password
+        ]);
+    
+        // Optional: Limit the password history to the last 5 entries
+        PasswordHistory::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->skip(5)
+            ->take(PHP_INT_MAX)
+            ->delete();
+    
+        return redirect()->back()->with('success', 'Your password has been changed successfully, and your account is unlocked!');
+    }
+    
+
+    /**
+     * Allow admin to change the password for any user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function changeUserPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'new_password' => [
+                'required',
+                'min:6',
+                'confirmed',
+                'regex:/[0-9]/',
+            ],
+        ]);
+    
+        if ($validator->fails()) {
+            Log::warning('Admin password change failed: Validation error', [
+                'admin_id' => Auth::id(),
                 'errors' => $validator->errors()->toArray(),
             ]);
     
@@ -56,49 +117,46 @@ class ChangePasswordController extends Controller
                 ->withInput();
         }
     
-        // Check if the current password matches the user's actual password
-        if (!Hash::check($request->current_password, Auth::user()->password)) {
-            Log::error('Password change failed: Incorrect current password', [
-                'user_id' => Auth::id(),
-            ]);
+        // Find the user by ID
+        $user = User::findOrFail($request->user_id);
     
-            return redirect()->back()->with('error', 'Your current password is incorrect.');
+        // Check if the new password is in the user's password history
+        $passwordExists = PasswordHistory::where('user_id', $user->id)
+            ->get()
+            ->contains(function ($history) use ($request) {
+                return Hash::check($request->new_password, $history->password);
+            });
+    
+        if ($passwordExists) {
+            return redirect()->back()->with('error', 'The user cannot reuse an old password.');
         }
     
-        // Check password history (last 5 passwords)
-        $recentPasswords = PasswordHistory::where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get();
-    
-        foreach ($recentPasswords as $history) {
-            if (Hash::check($request->new_password, $history->password)) {
-                Log::error('Password change failed: Reused recent password', [
-                    'user_id' => Auth::id(),
-                ]);
-    
-                return redirect()->back()->with('error', 'You cannot reuse your recent passwords.');
-            }
-        }
-    
-        // Update the user's password
-        Auth::user()->update([
-            'password' => Hash::make($request->new_password),
-        ]);
-    
-        // Save the new password to password history
+        // Record current password in the password history
         PasswordHistory::create([
-            'user_id' => Auth::id(),
-            'password' => Auth::user()->password, // Save hashed password
+            'user_id' => $user->id,
+            'password' => $user->password, // Save hashed password
         ]);
     
-        // Log the successful password change
-        Log::info('Password changed successfully', [
-            'user_id' => Auth::id(),
+        // Update the user's password and unlock the account
+        $user->update([
+            'password' => Hash::make($request->new_password),
+            'locked_until' => null, // Unlock the account
+            'failed_attempts' => 0, // Reset failed attempts
         ]);
     
-        // Redirect back with a success message
-        return redirect()->back()->with('success', 'Your password has been changed successfully!');
+        // Optional: Limit the password history to the last 5 entries
+        PasswordHistory::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->skip(5)
+            ->take(PHP_INT_MAX)
+            ->delete();
+    
+        Log::info('Admin changed user password successfully', [
+            'admin_id' => Auth::id(),
+            'user_id' => $user->id,
+        ]);
+    
+        return redirect()->back()->with('success', 'User password has been changed successfully, and the account is unlocked!');
     }
     
 }

@@ -9,11 +9,11 @@
   <br />
   @if($message = Session::get('success'))
   <div class="alert alert-success">
-   <p>{{$message}}</p>
+   <p>{{ $message }}</p>
   </div>
   @endif
   <div align="right">
-   <a href="{{route('client.create')}}" class="btn btn-primary">Add</a>
+   <a href="{{ route('client.create') }}" class="btn btn-primary">Add</a>
    <br />
    <br />
   </div>
@@ -26,13 +26,16 @@
    </tr>
    @foreach($clients as $row)
    <tr>
-    <td>{{$row['first_name']}}</td>
-    <td>{{$row['last_name']}}</td>
-    <td><a href="{{route('client.edit',['id'=> $row['id']])}}" class="btn btn-warning">Edit</a></td>
+    <td>{{ $row['first_name'] }}</td>
+    <td>{{ $row['last_name'] }}</td>
     <td>
-     <form method="post" class="delete_form" action="{{route('client.destroy',['id'=> $row['id']])}}">
-      {{csrf_field()}}
-      <input type="hidden" name="_method" value="DELETE" />
+      <!-- Fix for route parameter -->
+      <a href="{{ route('client.edit', $row['id']) }}" class="btn btn-warning">Edit</a>
+    </td>
+    <td>
+     <form method="post" class="delete_form" action="{{ route('client.destroy', $row['id']) }}">
+      @csrf
+      @method('DELETE')
       <button type="submit" class="btn btn-danger">Delete</button>
      </form>
     </td>
@@ -41,18 +44,13 @@
   </table>
  </div>
 </div>
+
 <script>
 $(document).ready(function(){
  $('.delete_form').on('submit', function(){
-  if(confirm("Voulez-vous vraiment supprimer ce client?"))
-  {
-   return true;
-  }
-  else
-  {
-   return false;
-  }
+  return confirm("Voulez-vous vraiment supprimer ce client?");
  });
 });
 </script>
+
 @endsection
